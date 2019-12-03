@@ -94,3 +94,5 @@ ENV/
 # Temporary outputs
 *.png
 *.pdf
+*.DS_Store
+pytest_session.txt

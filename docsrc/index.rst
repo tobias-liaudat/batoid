@@ -16,6 +16,8 @@ batoid: c++ backed python optical raytracer
    coatings
    analysis
    lattice
+   notebook/Rays
+
 
 ==================
 Indices and tables
