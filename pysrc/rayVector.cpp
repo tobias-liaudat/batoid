@@ -35,10 +35,8 @@ namespace batoid {
                     );
                 }
             )
-            .def("propagatedToTime", &RayVector::propagatedToTime)
-            .def("propagateInPlace", &RayVector::propagateInPlace)
+            .def("propagate", &RayVector::propagate)
             .def("trimVignetted", &RayVector::trimVignetted, "", "minFlux"_a=0.0)
-            .def("trimVignettedInPlace", &RayVector::trimVignettedInPlace, "", "minFlux"_a=0.0)
             // Note, monochromatic == True guarantees monochromaticity, but monochromatic == False,
             // doesn't guarantee polychromaticity.
             .def_property_readonly("monochromatic", [](const RayVector& rv){ return !std::isnan(rv.getWavelength()); })

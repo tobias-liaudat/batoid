@@ -39,68 +39,38 @@ namespace batoid {
     // This looks like y = R x + dr
     // For a passive transformation of a fixed vector from one coord sys to another
     // though, we want the opposite transformation: y = R^-1 (x - dr)
-    Vector3d CoordTransform::applyForward(const Vector3d& r) const {
-        return _rot.transpose()*(r-_dr);
+    void CoordTransform::applyForward(DRef<Vector3d> r) const {
+        r = _rot.transpose()*(r-_dr);
     }
 
-    Vector3d CoordTransform::applyReverse(const Vector3d& r) const {
-        return _rot*r+_dr;
+    void CoordTransform::applyReverse(DRef<Vector3d> r) const {
+        r = _rot*r+_dr;
     }
 
-    Ray CoordTransform::applyForward(const Ray& r) const {
-        if (r.failed) return r;
-        return Ray(_rot.transpose()*(r.r-_dr), _rot.transpose()*r.v,
-                r.t, r.wavelength, r.flux, r.vignetted);
-    }
-
-    Ray CoordTransform::applyReverse(const Ray& r) const {
-        if (r.failed) return r;
-        return Ray(_rot*r.r + _dr, _rot*r.v,
-            r.t, r.wavelength, r.flux, r.vignetted);
-    }
-
-    void CoordTransform::applyForwardInPlace(Ray& r) const {
+    void CoordTransform::applyForward(Ray& r) const {
         if (r.failed) return;
         r.r = _rot.transpose()*(r.r-_dr);
         r.v = _rot.transpose()*r.v;
     }
 
-    void CoordTransform::applyReverseInPlace(Ray& r) const {
+    void CoordTransform::applyReverse(Ray& r) const {
         if (r.failed) return;
         r.r = _rot*r.r+_dr;
         r.v = _rot*r.v;
     }
 
-    RayVector CoordTransform::applyForward(const RayVector& rv) const {
-        // assert rv.coordSys == getSource();
-        std::vector<Ray> result(rv.size());
-        parallelTransform(rv.cbegin(), rv.cend(), result.begin(),
-            [this](const Ray& r) { return applyForward(r); }
-        );
-        return RayVector(std::move(result), getDestination(), rv.getWavelength());
-    }
-
-    RayVector CoordTransform::applyReverse(const RayVector& rv) const {
-        // assert rv.coordSys == getDestination();
-        std::vector<Ray> result(rv.size());
-        parallelTransform(rv.cbegin(), rv.cend(), result.begin(),
-            [this](const Ray& r) { return applyReverse(r); }
-        );
-        return RayVector(std::move(result), getSource(), rv.getWavelength());
-    }
-
-    void CoordTransform::applyForwardInPlace(RayVector& rv) const {
+    void CoordTransform::applyForward(RayVector& rv) const {
         // assert rv.coordSys == getSource();
         parallel_for_each(rv.begin(), rv.end(),
-            [this](Ray& r) { applyForwardInPlace(r); }
+            [this](Ray& r) { applyForward(r); }
         );
         rv.setCoordSys(CoordSys(getDestination()));
     }
 
-    void CoordTransform::applyReverseInPlace(RayVector& rv) const {
+    void CoordTransform::applyReverse(RayVector& rv) const {
         // assert rv.coordSys == getDestination();
         parallel_for_each(rv.begin(), rv.end(),
-            [this](Ray& r) { applyReverseInPlace(r); }
+            [this](Ray& r) { applyReverse(r); }
         );
         rv.setCoordSys(CoordSys(getSource()));
     }

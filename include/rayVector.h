@@ -60,14 +60,12 @@ namespace batoid {
 
         // methods
         std::vector<Vector3d> positionAtTime(double t) const;
-        RayVector propagatedToTime(double t) const;
-        void propagateInPlace(double t);
+        void propagate(double t);
 
         std::vector<double> phase(const Vector3d& r, double t) const;
         std::vector<std::complex<double>> amplitude(const Vector3d& r, double t) const;
         std::complex<double> sumAmplitude(const Vector3d& r, double t) const;
-        RayVector trimVignetted(double minFlux) const;
-        void trimVignettedInPlace(double minFlux);
+        void trimVignetted(double minFlux);
         std::string repr() const;
 
         double getWavelength() const { return _wavelength; }

@@ -63,11 +63,12 @@ def test_composition():
 
         for i in range(10):
             vec3 = randomVec3()
-            vec3_a = transform1to3.applyForward(vec3)
-            vec3_b = transform2to3.applyForward(transform1to2.applyForward(vec3))
+            vec3_a = transform1to3.applyForward(vec3.copy())
+            vec3_b = transform2to3.applyForward(transform1to2.applyForward(vec3.copy()))
             np.testing.assert_allclose(vec3_a, vec3_b)
-            vec3_ra = transform1to3.applyReverse(vec3)
-            vec3_rb = transform1to2.applyReverse(transform2to3.applyReverse(vec3))
+
+            vec3_ra = transform1to3.applyReverse(vec3.copy())
+            vec3_rb = transform1to2.applyReverse(transform2to3.applyReverse(vec3.copy()))
             np.testing.assert_allclose(vec3_ra, vec3_rb)
 
             ray = randomRay()
@@ -91,16 +92,18 @@ def test_composition():
             assert rays_allclose(rv_ra, rv_rb), "error with reverse composite transform of RayVector"
 
             # Test with numpy arrays
-            xyz = rv.x, rv.y, rv.z
-            xyz_a = transform1to3.applyForward(*xyz)
-            xyz_b = transform2to3.applyForward(*transform1to2.applyForward(*xyz))
+            xyz = rv.r.T
+            xyz_a = transform1to3.applyForward(*xyz.copy())
+            xyz_b = transform2to3.applyForward(*transform1to2.applyForward(*xyz.copy()))
             xyz_c = [transform2to3.applyForward(transform1to2.applyForward(r.r)) for r in rv]
+            assert xyz_a[0].ctypes.data != xyz_b[0].ctypes.data
+            assert xyz_b[0].ctypes.data != xyz_c[0].ctypes.data
             np.testing.assert_allclose(xyz_a, xyz_b)
             np.testing.assert_allclose(xyz_a, np.transpose(xyz_c))
             # Should still work if we reshape.
-            xyz2 = rv.x.reshape((2, 5)), rv.y.reshape((2, 5)), rv.z.reshape((2, 5))
-            xyz2_a = transform1to3.applyForward(*xyz2)
-            xyz2_b = transform2to3.applyForward(*transform1to2.applyForward(*xyz2))
+            xyz2 = xyz.reshape((3, 2, 5))
+            xyz2_a = transform1to3.applyForward(*xyz2.copy())
+            xyz2_b = transform2to3.applyForward(*transform1to2.applyForward(*xyz2.copy()))
             np.testing.assert_allclose(xyz2_a, xyz2_b)
 
             # And also work if we reverse
@@ -138,6 +141,21 @@ def test_composition():
             transform1to2.applyReverse(rv)
             transform1to3.applyReverse(rv_copy)
             assert rays_allclose(rv, rv_copy)
+
+            # Check on exceptions
+            with np.testing.assert_raises(RuntimeError):
+                transform1to2.applyForward(np.array([1., 2, 3, 4]))
+            with np.testing.assert_raises(RuntimeError):
+                transform1to2.applyForward(np.array([1., 2]))
+            with np.testing.assert_raises(RuntimeError):
+                transform1to2.applyForward(
+                    np.array([1, 2, 3, 4.]),
+                    np.array([1, 2, 3, 4.]),
+                    np.array([1, 2, 3.])
+                )
+            with np.testing.assert_raises(TypeError):
+                transform1to2.applyForward(1, 2, 3.)
+
 
 
 if __name__ == '__main__':

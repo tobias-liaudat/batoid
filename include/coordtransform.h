@@ -12,6 +12,8 @@
 
 using Eigen::Vector3d;
 using Eigen::Matrix3d;
+template<class T>
+using DRef = Eigen::Ref<T, 0, Eigen::Stride<Eigen::Dynamic, Eigen::Dynamic>>;
 
 namespace batoid {
     class CoordTransform {
@@ -20,19 +22,14 @@ namespace batoid {
         CoordTransform(const CoordSys& source, const CoordSys& destination);
         CoordTransform(const Vector3d& dr, const Matrix3d& rot);
 
-        Vector3d applyForward(const Vector3d& r) const;
-        Vector3d applyReverse(const Vector3d& r) const;
+        void applyForward(DRef<Vector3d> r) const;
+        void applyReverse(DRef<Vector3d> r) const;
 
-        Ray applyForward(const Ray& r) const;
-        Ray applyReverse(const Ray& r) const;
+        void applyForward(Ray& r) const;
+        void applyReverse(Ray& r) const;
 
-        void applyForwardInPlace(Ray& r) const;
-        void applyReverseInPlace(Ray& r) const;
-
-        RayVector applyForward(const RayVector& rv) const;
-        RayVector applyReverse(const RayVector& rv) const;
-        void applyForwardInPlace(RayVector& rv) const;
-        void applyReverseInPlace(RayVector& rv) const;
+        void applyForward(RayVector& rv) const;
+        void applyReverse(RayVector& rv) const;
 
         const Matrix3d& getRot() const { return _rot; }
         const Vector3d& getDr() const { return _dr; }

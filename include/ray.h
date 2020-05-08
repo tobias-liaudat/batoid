@@ -28,8 +28,7 @@ namespace batoid {
         bool failed;
 
         Vector3d positionAtTime(double _t) const;
-        Ray propagatedToTime(double _t) const;
-        void propagateInPlace(double _t);
+        void propagate(double _t);
         bool operator==(const Ray&) const;
         bool operator!=(const Ray&) const;
 

@@ -8,6 +8,7 @@ from .coordsys import CoordSys
 from .coordtransform import CoordTransform
 from .utils import fieldToDirCos
 
+
 class Ray:
     """A geometric ray to trace through an optical system.  May also be thought
     of as a monochromatic propagating plane wave.
@@ -38,9 +39,15 @@ class Ray:
     def __init__(self, r=None, v=None, t=0.0, wavelength=0.0, flux=1.0,
                  vignetted=False, failed=False, coordSys=globalCoordSys):
         if failed:
-            self._rv = _batoid.CPPRayVector([_batoid.CPPRay(failed=True)], coordSys._coordSys)
+            self._rv = _batoid.CPPRayVector(
+                [_batoid.CPPRay(failed=True)],
+                coordSys._coordSys
+            )
         elif r is None and v is None:
-            self._rv = _batoid.CPPRayVector([_batoid.CPPRay()], coordSys._coordSys)
+            self._rv = _batoid.CPPRayVector(
+                [_batoid.CPPRay()],
+                coordSys._coordSys
+            )
         else:
             self._rv = _batoid.CPPRayVector([_batoid.CPPRay(
                 r, v, t, wavelength, flux, vignetted
@@ -170,7 +177,8 @@ class Ray:
 
         z = stopSurface.surface.sag(x, y)
         transform = CoordTransform(stopSurface.coordSys, globalCoordSys)
-        x, y, z = transform.applyForward(x, y, z)
+        xyz = np.array([x, y, z])
+        x, y, z = transform.applyForward(xyz)
 
         t = 0.0
         n = medium.getN(wavelength)
@@ -226,36 +234,6 @@ class Ray:
         """
         return self._rv.amplitude(r, t)[0]
 
-    def positionAtTime(self, t):
-        """Calculate the position of the Ray at a given time.
-
-        Parameters
-        ----------
-        t : float
-            Time (over vacuum speed of light; in meters).
-
-        Returns
-        -------
-        ndarray of float, shape (3,)
-            Position in meters.
-        """
-        return self._rv.positionAtTime(t)[0]
-
-    def propagate(self, t):
-        """Propagate Ray to given time.
-
-        Parameters
-        ----------
-        t : float
-            Time (over vacuum speed of light; in meters).
-
-        Returns
-        -------
-        Ray
-        """
-        self._rv.propagateInPlace(t)
-        return self
-
     def phase(self, r, t):
         """Calculate plane wave phase at given position and time.
 
@@ -273,7 +251,7 @@ class Ray:
         return self._rv.phase(r, t)[0]
 
     def toCoordSys(self, coordSys):
-        """Transform ray into new coordinate system.
+        """Transform ray into new coordinate system in place.
 
         Parameters
         ----------
@@ -283,9 +261,51 @@ class Ray:
         Returns
         -------
         Ray
+            Reference to Ray transformed in place.
+
+        Notes
+        -----
+        This operation is performed in place; the return value is a reference to
+        the transformed input `Ray`.
         """
         transform = CoordTransform(self.coordSys, coordSys)
         return transform.applyForward(self)
+
+    def positionAtTime(self, t):
+        """Calculate the position of the Ray at a given time.
+
+        Parameters
+        ----------
+        t : float
+            Time (over vacuum speed of light; in meters).
+
+        Returns
+        -------
+        ndarray of float, shape (3,)
+            Position in meters.
+        """
+        return self._rv.positionAtTime(t)[0]
+
+    def propagate(self, t):
+        """Propagate Ray to given time in place.
+
+        Parameters
+        ----------
+        t : float
+            Time (over vacuum speed of light; in meters).
+
+        Returns
+        -------
+        Ray
+            Reference to Ray propagated in place.
+
+        Notes
+        -----
+        This operation is performed in place; the return value is a reference to
+        the transformed input `Ray`.
+        """
+        self._rv.propagate(t)
+        return self
 
     @property
     def coordSys(self):

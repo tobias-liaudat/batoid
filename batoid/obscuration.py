@@ -32,14 +32,19 @@ class Obscuration:
         Parameters
         ----------
         r : `Ray` or `RayVector`
-            Rays to analyze.
+            Rays to potentially obscure.  Performed in place.
 
         Returns
         -------
         out : `Ray` or `RayVector`
-            Returned object will have appropriate elements marked as vignetted.
+            Reference to transformed input ray(s).
+
+        Notes
+        -----
+        This operation is performed in place; the return value is a reference to
+        the transformed input `Ray` or `RayVector`.
         """
-        self._obsc.obscureInPlace(r._rv)
+        self._obsc.obscure(r._rv)
 
     def __eq__(self, rhs):
         return (type(self) == type(rhs)
@@ -275,8 +280,8 @@ class ObscUnion(Obscuration):
     >>> rays = batoid.RayVector.asGrid(
             backDist=10.0, wavelength=500e-9, nx=10, lx=4.0, dirCos=(0,0,1)
         )
-    >>> obsc1 = big_circle.obscure(rays)
-    >>> obsc2 = alternate_big_circle.obscure(rays)
+    >>> obsc1 = big_circle.obscure(rays.copy())
+    >>> obsc2 = alternate_big_circle.obscure(rays.copy())
     >>> obsc1 == obsc2
     True
     """
@@ -329,8 +334,8 @@ class ObscIntersection(Obscuration):
     >>> rays = batoid.RayVector.asGrid(
             backDist=10.0, wavelength=500e-9, nx=10, lx=4.0, dirCos=(0,0,1)
         )
-    >>> obsc1 = annulus.obscure(rays)
-    >>> obsc2 = alternate_annulus.obscure(rays)
+    >>> obsc1 = annulus.obscure(rays.copy())
+    >>> obsc2 = alternate_annulus.obscure(rays.copy())
     >>> obsc1 == obsc2
     True
     """

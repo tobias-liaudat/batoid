@@ -367,7 +367,7 @@ def zernike(optic, theta_x, theta_y, wavelength,
         nx=nx, dirCos=dirCos
     )
     # Propagate to entrance pupil to get positions
-    epRays = rays.toCoordSys(optic.stopSurface.coordSys)
+    epRays = rays.copy().toCoordSys(optic.stopSurface.coordSys)
     optic.stopSurface.surface.intersect(epRays)
     orig_x = np.array(epRays.x).reshape(nx, nx)
     orig_y = np.array(epRays.y).reshape(nx, nx)
@@ -470,7 +470,7 @@ def zernikeGQ(optic, theta_x, theta_y, wavelength,
     )
 
     # Trace to stopSurface to get points at which to evalue Zernikes
-    epRays = rays.toCoordSys(optic.stopSurface.coordSys)
+    epRays = rays.copy().toCoordSys(optic.stopSurface.coordSys)
     optic.stopSurface.surface.intersect(epRays)
 
     basis = galsim.zernike.zernikeBasis(

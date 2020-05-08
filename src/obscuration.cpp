@@ -16,39 +16,16 @@ namespace batoid {
         return result;
     }
 
-    Ray Obscuration::obscure(const Ray& ray) const {
-        if (ray.failed || ray.vignetted) return ray;
-        if (contains(ray.r[0], ray.r[1]))
-            return Ray(ray.r, ray.v, ray.t, ray.wavelength, ray.flux, true);
-        else
-            return ray;
-    }
-
-    void Obscuration::obscureInPlace(Ray& ray) const {
+    void Obscuration::obscure(Ray& ray) const {
         if (ray.failed || ray.vignetted) return;
         if (contains(ray.r[0], ray.r[1]))
             ray.vignetted = true;
     }
 
-    RayVector Obscuration::obscure(const RayVector& rv) const {
-        std::vector<Ray> result(rv.size());
-        parallelTransform(rv.cbegin(), rv.cend(), result.begin(),
-            [this](const Ray& ray)
-            {
-                if (ray.failed) return ray;
-                if (contains(ray.r[0], ray.r[1]))
-                    return Ray(ray.r, ray.v, ray.t, ray.wavelength, ray.flux, true);
-                else
-                    return Ray(ray.r, ray.v, ray.t, ray.wavelength, ray.flux, ray.vignetted);
-            }
-        );
-        return RayVector(std::move(result), rv.getCoordSys(), rv.getWavelength());
-    }
-
-    void Obscuration::obscureInPlace(RayVector& rv) const {
+    void Obscuration::obscure(RayVector& rv) const {
         parallel_for_each(
             rv.begin(), rv.end(),
-            [this](Ray& r){ obscureInPlace(r); }
+            [this](Ray& r){ obscure(r); }
         );
     }
 

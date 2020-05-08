@@ -76,36 +76,14 @@ namespace batoid {
         );
         return result;
     }
-
-    RayVector RayVector::propagatedToTime(double t) const {
-        auto result = std::vector<Ray>(_rays.size());
-        parallelTransform(_rays.cbegin(), _rays.cend(), result.begin(),
-            [=](const Ray& ray)
-                { return ray.propagatedToTime(t); }
-        );
-        return RayVector(result, getCoordSys());
-    }
-
-    void RayVector::propagateInPlace(double t) {
+    void RayVector::propagate(double t) {
         parallel_for_each(_rays.begin(), _rays.end(),
             [=](Ray& ray)
-                { ray.propagateInPlace(t); }
+                { ray.propagate(t); }
         );
     }
 
-    RayVector RayVector::trimVignetted(double minFlux) const {
-        RayVector result;
-        result._rays.reserve(_rays.size());
-        std::copy_if(
-            _rays.begin(),
-            _rays.end(),
-            std::back_inserter(result._rays),
-            [=](const Ray& r){return !r.vignetted && r.flux>minFlux;}
-        );
-        return result;
-    }
-
-    void RayVector::trimVignettedInPlace(double minFlux) {
+    void RayVector::trimVignetted(double minFlux) {
         _rays.erase(
             std::remove_if(
                 _rays.begin(),

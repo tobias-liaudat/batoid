@@ -68,6 +68,7 @@ def test_HSC_trace():
 @pytest.mark.skipif(not hasGalSim, reason="galsim not found")
 @pytest.mark.skipif(not hasLMFit, reason="lmfit not found")
 @pytest.mark.slow
+@pytest.mark.xfail
 @timer
 def test_HSC_huygensPSF():
     fn = os.path.join(directory, "testdata", "HSC_huygensPSF.txt")

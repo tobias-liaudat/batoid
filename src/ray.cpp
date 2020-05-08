@@ -42,11 +42,7 @@ namespace batoid {
         return r+v*(_t-t);
     }
 
-    Ray Ray::propagatedToTime(const double _t) const {
-        return Ray(positionAtTime(_t), v, _t, wavelength, flux, vignetted);
-    }
-
-    void Ray::propagateInPlace(const double _t) {
+    void Ray::propagate(const double _t) {
         r += v*(_t-t);
         t = _t;
     }

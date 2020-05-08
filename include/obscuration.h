@@ -20,10 +20,8 @@ namespace batoid {
         virtual bool operator==(const Obscuration& rhs) const = 0;
         bool operator!=(const Obscuration& rhs) const { return !operator==(rhs); }
 
-        Ray obscure(const Ray&) const;
-        RayVector obscure(const RayVector&) const;
-        void obscureInPlace(Ray&) const;
-        void obscureInPlace(RayVector&) const;
+        void obscure(Ray&) const;
+        void obscure(RayVector&) const;
 
         virtual std::string repr() const = 0;
 

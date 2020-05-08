@@ -30,7 +30,9 @@ class RayVector:
                     wavelength = float("nan")
                     break
             self._rv = _batoid.CPPRayVector(
-                [ray._rv[0] for ray in rays], rays[0].coordSys._coordSys, wavelength
+                [ray._rv[0] for ray in rays],
+                rays[0].coordSys._coordSys,
+                wavelength
             )
         else:
             raise ValueError("Wrong arguments to RayVector")
@@ -731,7 +733,7 @@ class RayVector:
         return self._rv.phase(r, t)
 
     def toCoordSys(self, coordSys):
-        """Transform rays into new coordinate system.
+        """Transform rays into new coordinate system in place.
 
         Parameters
         ----------
@@ -741,6 +743,12 @@ class RayVector:
         Returns
         -------
         RayVector
+            Reference to RayVector transformed in place.
+
+        Notes
+        -----
+        This operation is performed in place; the return value is a reference to
+        the transformed input `Ray`.
         """
         transform = CoordTransform(self.coordSys, coordSys)
         return transform.applyForward(self)
@@ -761,7 +769,7 @@ class RayVector:
         return self._rv.positionAtTime(t)
 
     def propagate(self, t):
-        """Propagate RayVector to given time.
+        """Propagate RayVector to given time in place.
 
         Parameters
         ----------
@@ -771,13 +779,19 @@ class RayVector:
         Returns
         -------
         RayVector
+            Reference to RayVector propagated in place.
+
+        Notes
+        -----
+        This operation is performed in place; the return value is a reference to
+        the transformed input `Ray`.
         """
-        self._rv.propagateInPlace(t)
+        self._rv.propagate(t)
         return self
 
     def trimVignetted(self, minflux=0.0):
-        """Return new RayVector with vignetted rays or rays with flux below
-        given threshold removed.
+        """Modify RayVector in place by removing vignetted rays or rays with
+        flux below given threshold removed.
 
         Parameters
         ----------
@@ -787,8 +801,15 @@ class RayVector:
         Returns
         -------
         RayVector
+            Reference to RayVector trimmed in place.
+
+        Notes
+        -----
+        Because this operation changes the number of rays being stored, any
+        existing references to the underlying numpy arrays will be invalidated
+        after this method.
         """
-        self._rv.trimVignettedInPlace(minflux)
+        self._rv.trimVignetted(minflux)
         return self
 
     @property
@@ -800,6 +821,48 @@ class RayVector:
     def monochromatic(self):
         """True if all rays have same wavelength."""
         return self._rv.monochromatic
+
+    @property
+    def r(self):
+        """ndarray of float, shape (n, 3): Positions of rays in meters."""
+        return self._rv.r
+
+    @property
+    def v(self):
+        """ndarray of float, shape (n, 3): Velocities of rays in units of the
+        speed of light in vacuum.  Note that these may have magnitudes < 1 if
+        the rays are inside a refractive medium.
+        """
+        return self._rv.v
+
+    @property
+    def t(self):
+        """Reference times (divided by the speed of light in vacuum) in units
+        of meters, also known as the optical path lengths.
+        """
+        return self._rv.t
+
+    @property
+    def wavelength(self):
+        """Vacuum wavelengths in meters."""
+        return self._rv.wavelength
+
+    @property
+    def flux(self):
+        """Fluxes in arbitrary units."""
+        return self._rv.flux
+
+    @property
+    def vignetted(self):
+        """True for rays that have been vignetted."""
+        return self._rv.vignetted
+
+    @property
+    def failed(self):
+        """True for rays that have failed.  This may occur, for example, if
+        batoid failed to find the intersection of a ray wiht a surface.
+        """
+        return self._rv.failed
 
     @property
     def x(self):
@@ -836,48 +899,6 @@ class RayVector:
         light.
         """
         return self._rv.vz
-
-    @property
-    def t(self):
-        """Reference times (divided by the speed of light in vacuum) in units
-        of meters, also known as the optical path lengths.
-        """
-        return self._rv.t
-
-    @property
-    def wavelength(self):
-        """Vacuum wavelengths in meters."""
-        return self._rv.wavelength
-
-    @property
-    def flux(self):
-        """Fluxes in arbitrary units."""
-        return self._rv.flux
-
-    @property
-    def vignetted(self):
-        """True for rays that have been vignetted."""
-        return self._rv.vignetted
-
-    @property
-    def failed(self):
-        """True for rays that have failed.  This may occur, for example, if
-        batoid failed to find the intersection of a ray wiht a surface.
-        """
-        return self._rv.failed
-
-    @property
-    def r(self):
-        """ndarray of float, shape (n, 3): Positions of rays in meters."""
-        return self._rv.r
-
-    @property
-    def v(self):
-        """ndarray of float, shape (n, 3): Velocities of rays in units of the
-        speed of light in vacuum.  Note that these may have magnitudes < 1 if
-        the rays are inside a refractive medium.
-        """
-        return self._rv.v
 
     @property
     def k(self):
@@ -931,6 +952,7 @@ class RayVector:
 
     def __ne__(self, rhs):
         return not (self == rhs)
+
 
 def concatenateRayVectors(rvs):
     """Concatenates two or more RayVectors together.

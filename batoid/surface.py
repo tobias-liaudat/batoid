@@ -46,7 +46,7 @@ class Surface(ABC):
         Parameters
         ----------
         r : Ray or RayVector
-            Input ray(s) to intersect
+            Input ray(s) to intersect, transforming in place.
         coordSys : CoordSys, optional
             If present, then use for the coordinate system of the surface.  If
             `None` (default), then assume that ray(s) and surface are already
@@ -55,12 +55,16 @@ class Surface(ABC):
         Returns
         -------
         outRays : Ray or RayVector
-            New object corresponding to original ray(s) propagated to the
-            intersection point.
+            Reference to transformed input ray(s).
+
+        Notes
+        -----
+        This operation is performed in place; the return value is a reference to
+        the transformed input `Ray` or `RayVector`.
         """
         if coordSys is not None:
             coordSys = coordSys._coordSys
-        self._surface.intersectInPlace(r._rv, coordSys)
+        self._surface.intersect(r._rv, coordSys)
         return r
 
     def reflect(self, r, coating=None, coordSys=None):
@@ -81,14 +85,18 @@ class Surface(ABC):
         Returns
         -------
         outRays : Ray or RayVector
-            New object corresponding to original ray(s) propagated and
-            reflected.
+            Reference to transformed input ray(s).
+
+        Notes
+        -----
+        This operation is performed in place; the return value is a reference to
+        the transformed input `Ray` or `RayVector`.
         """
         if coating is not None:
             coating = coating._coating
         if coordSys is not None:
             coordSys = coordSys._coordSys
-        self._surface.reflectInPlace(r._rv, coating, coordSys)
+        self._surface.reflect(r._rv, coating, coordSys)
         return r
 
     def refract(self, r, inMedium, outMedium, coating=None, coordSys=None):
@@ -113,14 +121,18 @@ class Surface(ABC):
         Returns
         -------
         outRays : Ray or RayVector
-            New object corresponding to original ray(s) propagated and
-            refracted.
+            Reference to transformed input ray(s).
+
+        Notes
+        -----
+        This operation is performed in place; the return value is a reference to
+        the transformed input `Ray` or `RayVector`.
         """
         if coating is not None:
             coating = coating._coating
         if coordSys is not None:
             coordSys = coordSys._coordSys
-        self._surface.refractInPlace(
+        self._surface.refract(
             r._rv, inMedium._medium, outMedium._medium, coating, coordSys
         )
         return r

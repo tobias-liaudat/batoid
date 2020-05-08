@@ -77,14 +77,14 @@ def parallel_trace_timing(nside=1024, nthread=None, minChunk=None):
 
         for _ in range(args.nrepeat):
             rays_out = rays.copy()
-            telescope.traceInPlace(rays_out)
+            telescope.trace(rays_out)
 
         t1 = time.time()
         print("{} rays per second".format(int(nrays*args.nrepeat/(t1-t0))))
 
     if args.plot:
         import matplotlib.pyplot as plt
-        rays_out.trimVignettedInPlace()
+        rays_out.trimVignetted()
         x = rays_out.x
         y = rays_out.y
         x -= np.mean(x)

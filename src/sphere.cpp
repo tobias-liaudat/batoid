@@ -51,8 +51,10 @@ namespace batoid {
                     t = t2;
             } else {
                 // We need to pick whichever time is most consistent with the sag.
-                Ray r1 = r.propagatedToTime(r.t + t1);
-                Ray r2 = r.propagatedToTime(r.t + t2);
+                Ray r1(r);
+                r1.propagate(r.t + t1);
+                Ray r2(r);
+                r2.propagate(r.t + t2);
                 double d1 = std::abs(sag(r1.r[0], r1.r[1]) - r1.r[2]);
                 double d2 = std::abs(sag(r2.r[0], r2.r[1]) - r2.r[2]);
                 t = (d1 < d2) ? t1 : t2;
